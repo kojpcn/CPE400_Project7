@@ -84,6 +84,63 @@ def InitializeTopology (nid, itc):
 	# return object
 	return node
 
+# class: llnode
+# the objects to be used in the linked list
+# containing shortest path and number of hops
+class llnode(object):
+
+	def __init__ (self, nid=0, hops=0, next_node=None):
+		self.nid = nid
+		self.hops = hops
+		self.next_node = next_node
+
+	def GetNID (self):
+		return self.nid
+
+	def get_next (self):
+		return self.next_node
+
+	def set_next (self, new_next):
+		self.next_node = new_next
+
+# class: LinkedList for llnode
+class LinkedList (object):
+	def __init__ (self, head=None):
+		self.head = head
+
+	def insert (self, nid, hops):
+		new_node = llnode(nid, hops)
+		new_node.set_next(self.head)
+		self.head = new_node
+
+	def search (self, nid):
+		current = self.head
+		found = False
+		while current and found is False:
+			if current.GetNID() == data:
+				found = True
+			else:
+				current = current.get_next
+		# current will be None if not found
+		return current
+
+	def delete (self, nid):
+		current = self.head
+		previous = None
+		found = False
+		while current and found is False:
+			if current.GetNID() == nid:
+				found = True
+			else:
+				previous = current
+				current = curent.get_next()
+		if previous is None:
+			self.head = current.get_next()
+		else:
+			previous.set_next(current.get_next())
+
+
+
 # class: Node
 class Node(object):
 
@@ -413,20 +470,20 @@ def main(argv):
 
 		#print menu options
 		os.system('clear')
-		print("Enter 'info' to check network information")
-		print("Enter 'send_tcp' to message another node via TCP")
-		print("Enter 'send_udp' to message another node via UDP")		
-		print("Enter 'quit' to end program")
+		print("1. Info")
+		print("2. Send message to another node via TCP")
+		print("3. Send message to another node via UDP")		
+		print("4. Quit")
 
 		# set selection value from user
 		selection = input("Enter Selection: ")
 
 		# selection: status
-		if selection == 'info':
+		if selection == '1':
 			PrintInfo()
 
 		# selection: send_tcp
-		elif(selection == 'send_tcp'):
+		elif(selection == '2'):
 			os.system('clear')
 			dest_nid = input("enter node to message: ")
 			message = input("enter the message you want to send: ")
@@ -434,7 +491,7 @@ def main(argv):
 			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
 
 		# selection: send_udp
-		elif(selection == 'send_udp'):
+		elif(selection == '3'):
 			os.system('clear')
 			dest_nid = input("enter node to message: ")
 			message = input("enter the message you want to send: ")
@@ -442,7 +499,7 @@ def main(argv):
 			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")			
 
 		# selection: quit
-		elif(selection == 'quit'):
+		elif(selection == '4'):
 			run = 0
 			os.system('clear')
 
