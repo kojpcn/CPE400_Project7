@@ -31,6 +31,13 @@ l2_tcp_port = 0
 l3_tcp_port = 0
 l4_tcp_port = 0
 
+# global variable to track time since
+# last connection
+l1_last_connection = time.time()
+l2_last_connection = time.time()
+l3_last_connection = time.time()
+l4_last_connection = time.time()
+
 # create node object variable
 node = None
 
@@ -241,6 +248,26 @@ class Node(object):
 	def Set_address_data_table (self, nid, hostname, port):
 		self.address_data_table[nid] = nid, hostname, port
 
+# function NodeTimeUpdate (update variable tracking last activity for a node)
+def NodeTimeUpdate(node_id, new_time):
+
+	# global variables
+	global l1_NID, l2_NID, l3_NID, l4_NID
+	global l1_last_connection, l2_last_connection, l3_last_connection, l4_last_connection
+
+	if(node_id == l1_NID):
+		# Connection from 1st NID
+		l1_last_connection = new_time
+	elif(node_id == l2_NID):
+		# Connection from 2nd NID
+		l2_last_connection = new_time
+	elif(node_id == l3_NID):
+		# Connection from 3rd NID
+		l3_last_connection = new_time
+	elif(node_id == l4_NID):
+		# Connection from 4th NID
+		l4_last_connection = new_time
+
 # class TCP Handler (this receives all TCP messages)
 class MyTCPHandler(socketserver.BaseRequestHandler):	
 
@@ -262,13 +289,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		DestFlag = int(SplitMsg[0])
 		SourceNode = int(SplitMsg[1])
 		message = SplitMsg[2]
-		
-		print(DestFlag)
-		print(SourceNode)
 
 		if(DestFlag == -1):
 			# Propagation
-			print(message)
+			NodeTimeUpdate(SourceNode, time.time())
+			print("[Debug] LinkData recieved (tcp)")
 
 		elif(DestFlag == NID):
 			print(message)
@@ -299,7 +324,8 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
 		
 		if(DestFlag == -1):
 			# Propagation
-			print(message)
+			NodeTimeUpdate(SourceNode, time.time())
+			print("[Debug] LinkData recieved (udp)")
 
 		elif(DestFlag == NID):
 			print(message)
@@ -510,6 +536,93 @@ def PrintInfo():
 	print("Address Data: " + str(node.Get_address_data_table()))
 	os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
 
+def DebugLinkTCP(dest_nid, message):
+
+	# global variables
+	global NID, hostname, tcp_port
+	global l1_hostname, l2_hostname, l3_hostname, l4_hostname
+	global l1_tcp_port,l2_tcp_port, l3_tcp_port, l4_tcp_port	
+	global l1_NID, l2_NID, l3_NID, l4_NID
+
+	# Add destination ID and current node ID to message
+	message = str(-1) + '%20' + str(NID) + '%20' + message
+
+	# look up address information for the destination node
+	if dest_nid == str(l1_NID):
+		HOST = l1_hostname
+		PORT = l1_tcp_port
+
+	elif dest_nid == str(l2_NID):
+		HOST = l2_hostname
+		PORT = l2_tcp_port
+
+	elif dest_nid == str(l3_NID):
+		HOST = l3_hostname
+		PORT = l3_tcp_port
+
+	elif dest_nid == str(l4_NID):
+		HOST = l4_hostname
+		PORT = l4_tcp_port
+
+	else:
+		print('no address information for destination')
+
+	# encode message as byte stream
+	message = message.encode()
+
+	# send message
+	try:
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)				
+		sock.connect((HOST, PORT))
+		sock.sendall(message)
+		sock.close()
+
+	except:
+		print('error, message not sent')
+		pass
+
+# function: hello (alive)
+def DebugLinkUDP(dest_nid, message):
+
+	# global variables
+	global NID, hostname, tcp_port
+	global l1_hostname, l2_hostname, l3_hostname, l4_hostname
+	global l1_tcp_port,l2_tcp_port, l3_tcp_port, l4_tcp_port	
+	global l1_NID, l2_NID, l3_NID, l4_NID
+
+	# Add destination ID and current node ID to message
+	message = str(-1) + '%20' + str(NID) + '%20' + message
+
+	if dest_nid == str(l1_NID):
+		HOST = l1_hostname
+		PORT = l1_udp_port
+
+	elif dest_nid == str(l2_NID):
+		HOST = l2_hostname
+		PORT = l2_udp_port
+
+	elif dest_nid == str(l3_NID):
+		HOST = l3_hostname
+		PORT = l3_udp_port
+
+	elif dest_nid == str(l4_NID):
+		HOST = l4_hostname
+		PORT = l4_udp_port
+
+	else:
+		print('no address information for destination')
+
+	# encode message as byte stream
+	message = message.encode()
+
+	try:
+		# open socket and send to neighbor 4
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+		sock.sendto(message, (HOST, PORT))
+	except:
+		print('error, message not sent')			
+		pass
+
 # main function
 def main(argv):
 
@@ -539,6 +652,8 @@ def main(argv):
 		print("2. Send message to another node via TCP")
 		print("3. Send message to another node via UDP")		
 		print("4. Quit")
+		print("5. Send LinkData (tcp)")
+		print("6. Send LinkData (udp)")
 
 		# set selection value from user
 		selection = input("Enter Selection: ")
@@ -573,6 +688,26 @@ def main(argv):
 		elif(selection == '4'):
 			run = 0
 			os.system('clear')
+
+		elif(selection == '5'):
+			os.system('clear')
+			dest_nid = input("Node #: ")
+			message = input("Message: ")
+			if "%20" in message:
+				print("Error, can't use %20 (We use it for header separation!)")
+			else:
+				DebugLinkTCP(dest_nid, message)
+			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
+
+		elif(selection == '6'):
+			os.system('clear')
+			dest_nid = input("Node #: ")
+			message = input("Message: ")
+			if "%20" in message:
+				print("Error, can't use %20 (We use it for header separation!)")
+			else:
+				DebugLinkUDP(dest_nid, message)
+			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")	
 
 		else:
 
