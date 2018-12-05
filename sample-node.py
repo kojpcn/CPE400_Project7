@@ -283,6 +283,9 @@ def send_tcp(dest_nid, message):
 	global l1_tcp_port,l2_tcp_port, l3_tcp_port, l4_tcp_port	
 	global l1_NID, l2_NID, l3_NID, l4_NID
 
+	# Add destination ID and current node ID to message
+	message = str(dest_nid) + ' ' + NID + ' ' + message
+
 	# look up address information for the destination node
 	if dest_nid == str(l1_NID):
 		HOST = l1_hostname
@@ -325,6 +328,9 @@ def send_udp(dest_nid, message):
 	global l1_hostname, l2_hostname, l3_hostname, l4_hostname
 	global l1_tcp_port,l2_tcp_port, l3_tcp_port, l4_tcp_port	
 	global l1_NID, l2_NID, l3_NID, l4_NID
+
+	# Add destination ID and current node ID to message
+	message = str(dest_nid) + ' ' + NID + ' ' + message
 
 	if dest_nid == str(l1_NID):
 		HOST = l1_hostname
@@ -426,7 +432,7 @@ def start_listener():
 	t2.start()
 
 	# start thread for linked information propagation
-	t3 = threading.Thread(target=LinkPropagation)
+	t3 = threading.Thread(target=LinkData)
 	t3.daemon=True
 	t3.start()
 
@@ -451,7 +457,7 @@ def UDP_listener():
 	server.serve_forever()
 
 # function: Link propagation
-def LinkPropagation():
+def LinkData():
 
 	# global variables
 	global hostname, tcp_port
