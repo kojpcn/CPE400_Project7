@@ -366,6 +366,9 @@ def start_listener():
 	global l1_tcp_port, l2_tcp_port, l3_tcp_port, l4_tcp_port	
 	global l1_NID, l2_NID, l3_NID, l4_NID
 
+	# linked list of connected networks
+	global linked1, linked2, linked3, linked4
+
 	# check links for node attributes
 	links = node.GetLinks()
 	link1 = links[0]
@@ -399,6 +402,16 @@ def start_listener():
 	udp_port = node.GetPort()
 	tcp_port = udp_port + 500
 
+	# Create the linked lists and insert first node
+	linked1 = LinkedList()
+	linked1.insert(l1_NID, 1)
+	linked2 = LinkedList()
+	linked2.insert(l2_NID, 1)
+	linked3 = LinkedList()
+	linked3.insert(l3_NID, 1)
+	linked4 = LinkedList()
+	linked4.insert(l4_NID, 1)
+
 	# slight pause to let things catch up
 	time.sleep(2)
 
@@ -411,6 +424,11 @@ def start_listener():
 	t2 = threading.Thread(target=UDP_listener)
 	t2.daemon=True
 	t2.start()
+
+	# start thread for linked information propagation
+	t3 = threading.Thread(target=LinkPropagation)
+	t3.daemon=True
+	t3.start()
 
 # function: TCP listener
 def TCP_listener():
@@ -431,6 +449,12 @@ def UDP_listener():
 	# set socket for listener
 	server = socketserver.UDPServer((hostname, udp_port), MyUDPHandler)
 	server.serve_forever()
+
+# function: Link propagation
+def LinkPropagation():
+
+	# global variables
+	global hostname, tcp_port
 
 # print status
 def PrintInfo():
@@ -456,7 +480,7 @@ def main(argv):
 
 	# check for command line arguments
 	if len(sys.argv) != 3:
-		print("Usage: <program_file><nid><itc.txt>")
+		print("Usage: <program_file> <nid #> <itc#.txt>")
 		exit(1)
 
 	# initialize node object
@@ -485,16 +509,16 @@ def main(argv):
 		# selection: send_tcp
 		elif(selection == '2'):
 			os.system('clear')
-			dest_nid = input("enter node to message: ")
-			message = input("enter the message you want to send: ")
+			dest_nid = input("Node #: ")
+			message = input("Message: ")
 			send_tcp(dest_nid, message)
 			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
 
 		# selection: send_udp
 		elif(selection == '3'):
 			os.system('clear')
-			dest_nid = input("enter node to message: ")
-			message = input("enter the message you want to send: ")
+			dest_nid = input("Node #: ")
+			message = input("Message: ")
 			send_udp(dest_nid, message)
 			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")			
 
