@@ -110,15 +110,38 @@ class llnode(object):
 	def set_next (self, new_next):
 		self.next_node = new_next
 
+	def set_hops(self, new_hops):
+		self.hops = new_hops
+
 # class: LinkedList for llnode
 class LinkedList (object):
 	def __init__ (self, head=None):
 		self.head = head
 
+	def gotoEnd(self):
+		current = self.head
+		if current:
+			while current.get_next() is not None:
+				current = current.get_next()
+			return current
+		else:
+			return self.head
+
+	''' Old insert function (new inserts become head)
 	def insert (self, nid, hops):
 		new_node = llnode(nid, hops)
 		new_node.set_next(self.head)
 		self.head = new_node
+	'''
+
+	# New insert function (new inserts at tail)
+	def insert (self, nid, hops):
+		new_node = llnode(nid, hops)
+		if self.head is None:
+			self.head = new_node
+		else:
+			temp = self.gotoEnd()
+			temp.set_next(new_node)
 
 	def search (self, nid):
 		current = self.head
@@ -145,8 +168,6 @@ class LinkedList (object):
 			self.head = current.get_next()
 		else:
 			previous.set_next(current.get_next())
-
-
 
 # class: Node
 class Node(object):
@@ -267,6 +288,69 @@ def NodeTimeUpdate(node_id, new_time):
 	elif(node_id == l4_NID):
 		# Connection from 4th NID
 		l4_last_connection = new_time
+
+# function TimeOutObserver (mark nodes as disconnected or reconnected)
+def TimeOutObserver():
+	
+	# global variables
+	global l1_last_connection, l2_last_connection, l3_last_connection, l4_last_connection
+	global linked1, linked2, linked3, linked4
+	
+	currentTime, currentNode
+	
+	# Give time for links to propagate
+	time.wait(10)
+
+	while 1:
+		currentTime = time.time()
+
+		# Check link 1
+		if(currentTime - l1_last_connection > 10):
+			# Set node hop to -1 (disconnected)
+			currentNode = linked1.search(l1_NID)
+			if current is not None:
+				currentNode.set_hops(-1)
+		else:
+			# Set node hop to 1 (re-connected)
+			currentNode = linked1.search()
+			if current is not None:
+				current.set_hops(1)
+		
+		# Check link 2
+		if(currentTime - l2_last_connection > 10):
+			# Set node hop to -1 (disconnected)
+			currentNode = linked2.search(l2_NID)
+			if current is not None:
+				currentNode.set_hops(-1)
+		else:
+			# Set node hop to 1 (re-connected)
+			currentNode = linked2.search()
+			if current is not None:
+				current.set_hops(1)
+		
+		# Check link 3
+		if(currentTime - l3_last_connection > 10):
+			# Set node hop to -1 (disconnected)
+			currentNode = linked3.search(l3_NID)
+			if current is not None:
+				currentNode.set_hops(-1)
+		else:
+			# Set node hop to 1 (re-connected)
+			currentNode = linked3.search()
+			if current is not None:
+				current.set_hops(1)
+		
+		# Check link 4
+		if(currentTime - l4_last_connection > 10):
+			# Set node hop to -1 (disconnected)
+			currentNode = linked4.search(l4_NID)
+			if current is not None:
+				currentNode.set_hops(-1)
+		else:
+			# Set node hop to 1 (re-connected)
+			currentNode = linked4.search()
+			if current is not None:
+				current.set_hops(1)
 
 # class TCP Handler (this receives all TCP messages)
 class MyTCPHandler(socketserver.BaseRequestHandler):	
@@ -484,18 +568,23 @@ def start_listener():
 
 	# start thread for listener
 	t1 = threading.Thread(target=TCP_listener)
-	t1.daemon=True
+	t1.daemon = True
 	t1.start()
 
 	# start thread for listener
 	t2 = threading.Thread(target=UDP_listener)
-	t2.daemon=True
+	t2.daemon = True
 	t2.start()
 
 	# start thread for linked information propagation
 	t3 = threading.Thread(target=LinkData)
-	t3.daemon=True
+	t3.daemon = True
 	t3.start()
+
+	# start thread for node time activity observation
+	t4 = threading.Thread(target=TimeOutObserver)
+	t4.daemon = True
+	t4.start()
 
 # function: TCP listener
 def TCP_listener():
