@@ -284,7 +284,7 @@ def send_tcp(dest_nid, message):
 	global l1_NID, l2_NID, l3_NID, l4_NID
 
 	# Add destination ID and current node ID to message
-	message = str(dest_nid) + ' ' + NID + ' ' + message
+	message = str(dest_nid) + ' ' + str(NID) + ' ' + message
 
 	# look up address information for the destination node
 	if dest_nid == str(l1_NID):
@@ -330,7 +330,7 @@ def send_udp(dest_nid, message):
 	global l1_NID, l2_NID, l3_NID, l4_NID
 
 	# Add destination ID and current node ID to message
-	message = str(dest_nid) + ' ' + NID + ' ' + message
+	message = str(dest_nid) + ' ' + str(NID) + ' ' + message
 
 	if dest_nid == str(l1_NID):
 		HOST = l1_hostname
