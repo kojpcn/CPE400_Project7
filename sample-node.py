@@ -256,7 +256,26 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		self.data = self.request.recv(1024)
 		message = self.data
 		message = ''.join(message.decode().split())
-		print(message)
+		
+		# Split actual message from headers
+		SplitMsg = message.split('%20')
+		DestFlag = int(SplitMsg[0])
+		SourceNode = int(SplitMsg[1])
+		message = SplitMsg[2]
+		
+		print(DestFlag)
+		print(SourceNode)
+
+		if(DestFlag == -1):
+			# Propagation
+			print(message)
+
+		elif(DestFlag == NID):
+			print(message)
+
+		else:
+			send_udp(DestFlag, message)
+
 		os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")					
 
 # Class: MyUDPHandler (this receives all UDP messages)
@@ -271,7 +290,23 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
 		# set message and split
 		message = data
 		message = ''.join(message.decode().split())
-		print(message)
+		
+		# Split actual message from headers
+		SplitMsg = message.split('%20')
+		DestFlag = int(SplitMsg[0])
+		SourceNode = int(SplitMsg[1])
+		message = SplitMsg[2]
+		
+		if(DestFlag == -1):
+			# Propagation
+			print(message)
+
+		elif(DestFlag == NID):
+			print(message)
+
+		else:
+			send_udp(DestFlag, message)
+
 		os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")			
 
 # Function: sendto()
@@ -284,7 +319,7 @@ def send_tcp(dest_nid, message):
 	global l1_NID, l2_NID, l3_NID, l4_NID
 
 	# Add destination ID and current node ID to message
-	message = str(dest_nid) + ' ' + str(NID) + ' ' + message
+	message = str(dest_nid) + '%20' + str(NID) + '%20' + message
 
 	# look up address information for the destination node
 	if dest_nid == str(l1_NID):
@@ -330,7 +365,7 @@ def send_udp(dest_nid, message):
 	global l1_NID, l2_NID, l3_NID, l4_NID
 
 	# Add destination ID and current node ID to message
-	message = str(dest_nid) + ' ' + str(NID) + ' ' + message
+	message = str(dest_nid) + '%20' + str(NID) + '%20' + message
 
 	if dest_nid == str(l1_NID):
 		HOST = l1_hostname
@@ -517,7 +552,10 @@ def main(argv):
 			os.system('clear')
 			dest_nid = input("Node #: ")
 			message = input("Message: ")
-			send_tcp(dest_nid, message)
+			if "%20" in message:
+				print("Error, can't use %20 (We use it for header separation!)")
+			else:
+				send_tcp(dest_nid, message)
 			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
 
 		# selection: send_udp
@@ -525,7 +563,10 @@ def main(argv):
 			os.system('clear')
 			dest_nid = input("Node #: ")
 			message = input("Message: ")
-			send_udp(dest_nid, message)
+			if "%20" in message:
+				print("Error, can't use %20 (We use it for header separation!)")
+			else:
+				send_udp(dest_nid, message)
 			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")			
 
 		# selection: quit
