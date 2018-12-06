@@ -300,50 +300,34 @@ def TimeOutObserver():
 		# Check link 1
 		if(currentTime - l1_last_connection > 10):
 			# Set node hop to 0 (disconnected)
-			currentNode = linked1.search(l1_NID)
-			if currentNode is not None:
-				currentNode.set_hops(0)
+			linked1.head.set_hops(0)
 		else:
 			# Set node hop to 1 (re-connected)
-			currentNode = linked1.search(l1_NID)
-			if currentNode is not None:
-				currentNode.set_hops(1)
+			linked1.head.set_hops(1)
 		
 		# Check link 2
 		if(currentTime - l2_last_connection > 10):
 			# Set node hop to 0 (disconnected)
-			currentNode = linked2.search(l2_NID)
-			if currentNode is not None:
-				currentNode.set_hops(0)
+			linked2.head.set_hops(0)
 		else:
 			# Set node hop to 1 (re-connected)
-			currentNode = linked2.search(l2_NID)
-			if currentNode is not None:
-				currentNode.set_hops(1)
+			linked2.head.set_hops(1)
 		
 		# Check link 3
 		if(currentTime - l3_last_connection > 10):
 			# Set node hop to 0 (disconnected)
-			currentNode = linked3.search(l3_NID)
-			if currentNode is not None:
-				currentNode.set_hops(0)
+			linked3.head.set_hops(0)
 		else:
 			# Set node hop to 1 (re-connected)
-			currentNode = linked3.search(l3_NID)
-			if currentNode is not None:
-				currentNode.set_hops(1)
+			linked3.head.set_hops(1)
 		
 		# Check link 4
 		if(currentTime - l4_last_connection > 10):
 			# Set node hop to 0 (disconnected)
-			currentNode = linked4.search(l4_NID)
-			if currentNode is not None:
-				currentNode.set_hops(0)
+			linked4.head.set_hops(0)
 		else:
 			# Set node hop to 1 (re-connected)
-			currentNode = linked4.search(l4_NID)
-			if currentNode is not None:
-				currentNode.set_hops(1)
+			linked4.head.set_hops(1)
 
 		# Only poll every second
 		time.sleep(1)
@@ -654,28 +638,30 @@ def LinkDataRecv(sourceNode, message):
 	if(sourceNode == l1_NID and l1_NID != 0):
 		index_counter = 0
 		while index_counter < len(message):
+			if message[index_counter] == NID:
+				index_counter += 2
 			if linked1.search(message[index_counter]) is not None:
 				# Replace
 				temp_node = linked1.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
-					temp.node.set_hops(temp_val)
+				if temp_node.get_hops() >= temp_val:
+					temp_node.set_hops(temp_val)
 			elif linked2.search(message[index_counter]) is not None:
 				temp_node = linked2.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked2.delete(int(message[index_counter]))
 					linked1.insert(message[index_counter], temp_val)
 			elif linked3.search(message[index_counter]) is not None:
 				temp_node = linked3.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked3.delete(int(message[index_counter]))
 					linked1.insert(message[index_counter], temp_val)
 			elif linked4.search(message[index_counter]) is not None:
 				temp_node = linked4.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked4.delete(int(message[index_counter]))
 					linked1.insert(message[index_counter], temp_val)
 			else:
@@ -689,24 +675,24 @@ def LinkDataRecv(sourceNode, message):
 				# Replace
 				temp_node = linked2.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
-					temp.node.set_hops(temp_val)
+				if temp_node.get_hops() >= temp_val:
+					temp_node.set_hops(temp_val)
 			elif linked1.search(message[index_counter]) is not None:
 				temp_node = linked1.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked1.delete(int(message[index_counter]))
 					linked2.insert(message[index_counter], temp_val)
 			elif linked3.search(message[index_counter]) is not None:
 				temp_node = linked3.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked3.delete(int(message[index_counter]))
 					linked2.insert(message[index_counter], temp_val)
 			elif linked4.search(message[index_counter]) is not None:
 				temp_node = linked4.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked4.delete(int(message[index_counter]))
 					linked2.insert(message[index_counter], temp_val)
 			else:
@@ -720,24 +706,24 @@ def LinkDataRecv(sourceNode, message):
 				# Replace
 				temp_node = linked3.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
-					temp.node.set_hops(temp_val)
+				if temp_node.get_hops() >= temp_val:
+					temp_node.set_hops(temp_val)
 			elif linked2.search(message[index_counter]) is not None:
 				temp_node = linked2.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked2.delete(int(message[index_counter]))
 					linked3.insert(message[index_counter], temp_val)
 			elif linked1.search(message[index_counter]) is not None:
 				temp_node = linked1.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked1.delete(int(message[index_counter]))
 					linked3.insert(message[index_counter], temp_val)
 			elif linked4.search(message[index_counter]) is not None:
 				temp_node = linked4.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked4.delete(int(message[index_counter]))
 					linked3.insert(message[index_counter], temp_val)
 			else:
@@ -751,24 +737,24 @@ def LinkDataRecv(sourceNode, message):
 				# Replace
 				temp_node = linked4.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
-					temp.node.set_hops(temp_val)
+				if temp_node.get_hops() >= temp_val:
+					temp_node.set_hops(temp_val)
 			elif linked2.search(message[index_counter]) is not None:
 				temp_node = linked2.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked2.delete(int(message[index_counter]))
 					linked4.insert(message[index_counter], temp_val)
 			elif linked3.search(message[index_counter]) is not None:
 				temp_node = linked3.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked3.delete(int(message[index_counter]))
 					linked4.insert(message[index_counter], temp_val)
 			elif linked1.search(message[index_counter]) is not None:
 				temp_node = linked1.search(message[index_counter])
 				temp_val = int(message[index_counter + 1]) + 1
-				if temp_node.get_hops() > temp_val:
+				if temp_node.get_hops() >= temp_val:
 					linked1.delete(int(message[index_counter]))
 					linked4.insert(message[index_counter], temp_val)
 			else:
