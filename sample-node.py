@@ -158,7 +158,7 @@ class LinkedList (object):
 				found = True
 			else:
 				previous = current
-				current = curent.get_next()
+				current = current.get_next()
 		if previous is None:
 			self.head = current.get_next()
 		else:
@@ -377,7 +377,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 		elif(DestFlag == NID):
 			print(message)
-			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")	
+			#os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")	
 
 		else:
 			send_tcp(DestFlag, message)
@@ -403,7 +403,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
 
 		if(DestFlag == NID):
 			print(message)
-			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")			
+			#os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")			
 		
 		else:
 			send_udp(DestFlag, message)
@@ -422,20 +422,24 @@ def send_tcp(dest_nid, message):
 
 	# look up address information for the destination node
 	if linked1.search(dest_nid) is not None:
-		HOST = l1_hostname
-		PORT = l1_tcp_port
+		if(linked1.head.get_hops() != 0):
+			HOST = l1_hostname
+			PORT = l1_tcp_port
 
 	elif linked2.search(dest_nid) is not None:
-		HOST = l2_hostname
-		PORT = l2_tcp_port
+		if(linked2.head.get_hops() != 0):
+			HOST = l2_hostname
+			PORT = l2_tcp_port
 
 	elif linked3.search(dest_nid) is not None:
-		HOST = l3_hostname
-		PORT = l3_tcp_port
+		if(linked3.head.get_hops() != 0):
+			HOST = l3_hostname
+			PORT = l3_tcp_port
 
 	elif linked4.search(dest_nid) is not None:
-		HOST = l4_hostname
-		PORT = l4_tcp_port
+		if(linked4.head.get_hops() != 0):
+			HOST = l4_hostname
+			PORT = l4_tcp_port
 
 	else:
 		print('no address information for destination')
@@ -467,20 +471,24 @@ def send_udp(dest_nid, message):
 	message = str(dest_nid) + '%20' + str(NID) + '%20' + message
 
 	if linked1.search(dest_nid) is not None:
-		HOST = l1_hostname
-		PORT = l1_udp_port
+		if(linked1.head.get_hops() != 0):
+			HOST = l1_hostname
+			PORT = l1_udp_port
 
 	elif linked2.search(dest_nid) is not None:
-		HOST = l2_hostname
-		PORT = l2_udp_port
+		if(linked2.head.get_hops() != 0):
+			HOST = l2_hostname
+			PORT = l2_udp_port
 
 	elif linked3.search(dest_nid) is not None:
-		HOST = l3_hostname
-		PORT = l3_udp_port
+		if(linked3.head.get_hops() != 0):
+			HOST = l3_hostname
+			PORT = l3_udp_port
 
 	elif linked4.search(dest_nid) is not None:
-		HOST = l4_hostname
-		PORT = l4_udp_port
+		if(linked4.head.get_hops() != 0):
+			HOST = l4_hostname
+			PORT = l4_udp_port
 
 	else:
 		print('no address information for destination')
@@ -605,14 +613,18 @@ def LinkDataSend():
 
 	while 1:
 		time.sleep(5)
-		message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
-		DebugLinkTCP(l1_NID, message)
-		message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
-		DebugLinkTCP(l2_NID, message)
-		message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
-		DebugLinkTCP(l3_NID, message)
-		message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
-		DebugLinkTCP(l4_NID, message)
+		if(linked1.head.get_hops() != 0):
+			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
+			DebugLinkTCP(l1_NID, message)
+		if(linked2.head.get_hops() != 0):
+			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked2)
+			DebugLinkTCP(l2_NID, message)
+		if(linked3.head.get_hops() != 0):
+			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked3)
+			DebugLinkTCP(l3_NID, message)
+		if(linked4.head.get_hops() != 0):
+			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked4)
+			DebugLinkTCP(l4_NID, message)
 
 # Function to handle recieving data
 def LinkDataRecv(sourceNode, message):
@@ -771,11 +783,11 @@ def PrintInfo():
 	global node, NID, hostname, udp_port, tcp_port
 
 	# output data
-	os.system('clear')
+	#os.system('clear')
 	print("NID: " + str(NID))
 	print("Link Table: " + str(node.Get_link_table()))
 	print("Address Data: " + str(node.Get_address_data_table()))
-	os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
+	#os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
 
 def convert_linked_to_str(ll_nodes):
 	converted_str = ""
@@ -853,7 +865,7 @@ def main(argv):
 	while(run):
 
 		#print menu options
-		os.system('clear')
+		#os.system('clear')
 		print("1. Info")
 		print("2. Send message to another node via TCP")
 		print("3. Send message to another node via UDP")		
@@ -869,43 +881,35 @@ def main(argv):
 
 		# selection: send_tcp
 		elif(selection == '2'):
-			os.system('clear')
+			#os.system('clear')
 			dest_nid = input("Node #: ")
 			message = input("Message: ")
 			if "%20" in message:
 				print("Error, can't use %20 (We use it for header separation!)")
 			else:
 				send_tcp(dest_nid, message)
-			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
+			#os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
 
 		# selection: send_udp
 		elif(selection == '3'):
-			os.system('clear')
+			#os.system('clear')
 			dest_nid = input("Node #: ")
 			message = input("Message: ")
 			if "%20" in message:
 				print("Error, can't use %20 (We use it for header separation!)")
 			else:
 				send_udp(dest_nid, message)
-			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")			
+			#os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")			
 
 		# selection: quit
 		elif(selection == '4'):
 			run = 0
-			os.system('clear')
-
-		elif(selection == '5'):
-			os.system('clear')
-			print("Sending link data to node:", end = ' ')
-			print(l1_NID)
-			temp_msg = str(0) + '%20' + str(l1_NID) + '%20' + convert_linked_to_str(linked1)
-			DebugLinkTCP(int(l1_NID), temp_msg)
-			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")	
+			#os.system('clear')
 
 		else:
 
 			# default for bad input
-			os.system('clear')
+			#os.system('clear')
 			time.sleep(.5)
 			continue
 
