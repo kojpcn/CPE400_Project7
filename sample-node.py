@@ -624,19 +624,19 @@ def LinkDataRecv(sourceNode, message):
 	if int(message[1]) == 0:
 		if(sourceNode == l1_NID and l1_NID != 0):
 			while linked1.head.get_next() is not None:
-				linked1.head.delete(linked1.head.get_next().get_nid())
+				linked1.delete(linked1.head.get_next().get_nid())
 			linked1.head.set_hops(0)
 		elif(sourceNode == l2_NID and l2_NID != 0):
 			while linked2.head.get_next() is not None:
-				linked2.head.delete(linked2.head.get_next().get_nid())
+				linked2.delete(linked2.head.get_next().get_nid())
 			linked2.head.set_hops(0)
 		elif(sourceNode == l3_NID and l3_NID != 0):
 			while linked3.head.get_next() is not None:
-				linked3.head.delete(linked3.head.get_next().get_nid())
+				linked3.delete(linked3.head.get_next().get_nid())
 			linked3.head.set_hops(0)
 		elif(sourceNode == l4_NID and l4_NID != 0):
 			while linked4.head.get_next() is not None:
-				linked4.head.delete(linked4.head.get_next().get_nid())
+				linked4.delete(linked4.head.get_next().get_nid())
 			linked4.head.set_hops(0)
 
 	if(sourceNode == l1_NID and l1_NID != 0):
