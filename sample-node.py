@@ -597,16 +597,16 @@ def LinkDataSend():
 
 	while 1:
 		time.sleep(5)
-		if(l1_NID != 0 and linked1.head.get_hops() != 0):
+		if(linked1.head.get_hops() != 0):
 			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
 			DebugLinkTCP(l1_NID, message)
-		if(l2_NID != 0 and linked2.head.get_hops() != 0):
+		if(linked2.head.get_hops() != 0):
 			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked2)
 			DebugLinkTCP(l2_NID, message)
-		if(l3_NID != 0 and linked3.head.get_hops() != 0):
+		if(linked3.head.get_hops() != 0):
 			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked3)
 			DebugLinkTCP(l3_NID, message)
-		if(l4_NID != 0 and linked4.head.get_hops() != 0):
+		if(linked4.head.get_hops() != 0):
 			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked4)
 			DebugLinkTCP(l4_NID, message)
 
@@ -856,7 +856,8 @@ def main(argv):
 		print("2. Send message to another node via TCP")
 		print("3. Send message to another node via UDP")		
 		print("4. Quit")
-		print("5. Send LinkData (tcp)")
+		print("5. Search for a connection to a node and the number of hops required")
+		print("6. Show all the nodes than can be reached and the number of hops required")
 
 		# set selection value from user
 		selection = input("Enter Selection: ")
@@ -891,6 +892,54 @@ def main(argv):
 		elif(selection == '4'):
 			run = 0
 			#os.system('clear')
+		elif(selection == '5'):
+			#os.system('clear')
+			dest_nid = input("Node #: ")
+			if linked1.search(dest_nid):
+				print("Node" + str(dest_nid) + " can be reached through neighbor 1, Node " + str(l1_NID))
+				print ("It would take " + str(linked1.search(dest_nid).get_hops()) + " hops")
+			elif linked2.search(dest_nid):
+				print("Node" + str(dest_nid) + " can be reached through neighbor 2, Node " + str(l2_NID))
+				print ("It would take " + str(linked1.search(dest_nid).get_hops()) + " hops")
+			elif linked3.search(dest_nid):
+				print("Node" + str(dest_nid) + " can be reached through neighbor 3, Node " + str(l3_NID))
+				print ("It would take " + str(linked1.search(dest_nid).get_hops()) + " hops")
+			elif linked4.search(dest_nid):
+				print("Node" + str(dest_nid) + " can be reached through neighbor 4, Node " + str(l4_NID))
+				print ("It would take " + str(linked1.search(dest_nid).get_hops()) + " hops")
+			else:
+				print("No route found to Node" + str(dest_nid))
+			#os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
+		elif(selection == '6'):
+			if linked1.head:
+				if linked1.head.get_hops():
+					print("By sending to Node " + str(linked1.head.get_nid()) + " the following nodes can be reached:")
+					curr_ptr = linked1.head
+					while curr_ptr is not None:
+						print( "    Node " + str(curr_ptr.get_nid()) + " in " + str(curr_ptr.get_hops()) + " hops")
+						curr_ptr = curr_ptr.get_next()
+			if linked2.head:
+				if linked2.head.get_hops():
+					print("By sending to Node " + str(linked2.head.get_nid()) + " the following nodes can be reached:")
+					curr_ptr = linked2.head
+					while curr_ptr is not None:
+						print( "    Node " + str(curr_ptr.get_nid()) + " in " + str(curr_ptr.get_hops()) + " hops")
+						curr_ptr = curr_ptr.get_next()
+			if linked3.head:
+				if linked3.head.get_hops():
+					print("By sending to Node " + str(linked3.head.get_nid()) + " the following nodes can be reached:")
+					curr_ptr = linked3.head
+					while curr_ptr is not None:
+						print( "    Node " + str(curr_ptr.get_nid()) + " in " + str(curr_ptr.get_hops()) + " hops")
+						curr_ptr = curr_ptr.get_next()
+			if linked4.head:
+				if linked4.head.get_hops():
+					print("By sending to Node " + str(linked4.head.get_nid()) + " the following nodes can be reached:")
+					curr_ptr = linked4.head
+					while curr_ptr is not None:
+						print( "    Node " + str(curr_ptr.get_nid()) + " in " + str(curr_ptr.get_hops()) + " hops")
+						curr_ptr = curr_ptr.get_next()
+					
 
 		else:
 
