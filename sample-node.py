@@ -132,7 +132,7 @@ class LinkedList (object):
 	
 	# New insert function (new inserts at tail)
 	def insert (self, nid, hops):
-		new_node = llnode(nid, hops)
+		new_node = llnode(int(nid), int(hops))
 		if self.head is None:
 			self.head = new_node
 		else:
@@ -141,10 +141,8 @@ class LinkedList (object):
 
 	def search (self, nid):
 		current = self.head
-		if current is None:
-			print("ITS FUCKING EMPTY")
 		while current is not None:
-			if current.get_nid() == nid:
+			if current.get_nid() == int(nid):
 				break
 			else:
 				current = current.get_next()
@@ -156,7 +154,7 @@ class LinkedList (object):
 		previous = None
 		found = False
 		while current and found is False:
-			if current.get_nid() == nid:
+			if current.get_nid() == int(nid):
 				found = True
 			else:
 				previous = current
@@ -301,10 +299,10 @@ def TimeOutObserver():
 
 		# Check link 1
 		if(currentTime - l1_last_connection > 10):
-			# Set node hop to -1 (disconnected)
+			# Set node hop to 0 (disconnected)
 			currentNode = linked1.search(l1_NID)
 			if currentNode is not None:
-				currentNode.set_hops(-1)
+				currentNode.set_hops(0)
 		else:
 			# Set node hop to 1 (re-connected)
 			currentNode = linked1.search(l1_NID)
@@ -313,10 +311,10 @@ def TimeOutObserver():
 		
 		# Check link 2
 		if(currentTime - l2_last_connection > 10):
-			# Set node hop to -1 (disconnected)
+			# Set node hop to 0 (disconnected)
 			currentNode = linked2.search(l2_NID)
 			if currentNode is not None:
-				currentNode.set_hops(-1)
+				currentNode.set_hops(0)
 		else:
 			# Set node hop to 1 (re-connected)
 			currentNode = linked2.search(l2_NID)
@@ -325,10 +323,10 @@ def TimeOutObserver():
 		
 		# Check link 3
 		if(currentTime - l3_last_connection > 10):
-			# Set node hop to -1 (disconnected)
+			# Set node hop to 0 (disconnected)
 			currentNode = linked3.search(l3_NID)
 			if currentNode is not None:
-				currentNode.set_hops(-1)
+				currentNode.set_hops(0)
 		else:
 			# Set node hop to 1 (re-connected)
 			currentNode = linked3.search(l3_NID)
@@ -337,10 +335,10 @@ def TimeOutObserver():
 		
 		# Check link 4
 		if(currentTime - l4_last_connection > 10):
-			# Set node hop to -1 (disconnected)
+			# Set node hop to 0 (disconnected)
 			currentNode = linked4.search(l4_NID)
 			if currentNode is not None:
-				currentNode.set_hops(-1)
+				currentNode.set_hops(0)
 		else:
 			# Set node hop to 1 (re-connected)
 			currentNode = linked4.search(l4_NID)
@@ -372,18 +370,17 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		SourceNode = int(SplitMsg[1])
 		message = SplitMsg[2]
 
-		if(DestFlag == -1):
+		if(DestFlag == 0):
 			# Propagation
 			NodeTimeUpdate(SourceNode, time.time())
-			print("[Debug] LinkData recieved (tcp)")
+			LinkDataRecv(SourceNode, message)
 
 		elif(DestFlag == NID):
 			print(message)
+			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")	
 
 		else:
-			send_udp(DestFlag, message)
-
-		os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")					
+			send_tcp(DestFlag, message)
 
 # Class: MyUDPHandler (this receives all UDP messages)
 class MyUDPHandler(socketserver.BaseRequestHandler):
@@ -404,12 +401,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
 		SourceNode = int(SplitMsg[1])
 		message = SplitMsg[2]
 
-		if(DestFlag == NID):
-			print(message)
-
-		else:
-			send_udp(DestFlag, message)
-
+		print(message)
 		os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")			
 
 # Function: sendto()
@@ -570,15 +562,15 @@ def start_listener():
 	t2.start()
 
 	# start thread for linked information propagation
-	t3 = threading.Thread(target=LinkData)
+	t3 = threading.Thread(target=LinkDataSend)
 	t3.daemon = True
 	t3.start()
 
 
 	# start thread for node time activity observation
-#	t4 = threading.Thread(target=TimeOutObserver)
-#	t4.daemon = True
-#	t4.start()
+	t4 = threading.Thread(target=TimeOutObserver)
+	t4.daemon = True
+	t4.start()
 
 # function: TCP listener
 def TCP_listener():
@@ -601,10 +593,171 @@ def UDP_listener():
 	server.serve_forever()
 
 # function: Link propagation
-def LinkData():
+def LinkDataSend():
 
 	# global variables
-	global hostname, tcp_port
+	global linked1, linked2, linked3, linked4
+
+	while 1:
+		time.sleep(5)
+		message = str(0) + '%20' + str(l1_NID) + '%20' + convert_linked_to_str(linked1)
+		DebugLinkTCP(l1_NID, message)
+		message = str(0) + '%20' + str(l2_NID) + '%20' + convert_linked_to_str(linked1)
+		DebugLinkTCP(l2_NID, message)
+		message = str(0) + '%20' + str(l3_NID) + '%20' + convert_linked_to_str(linked1)
+		DebugLinkTCP(l3_NID, message)
+		message = str(0) + '%20' + str(l4_NID) + '%20' + convert_linked_to_str(linked1)
+		DebugLinkTCP(l4_NID, message)
+
+# Function to handle recieving data
+def LinkDataRecv(sourceNode, char_msg):
+
+	print("Link data recieved from node:", end = ' ')
+	print(sourceNode)
+	global linked1, linked2, linked3, linked4
+
+	if int(message[1]) == 0:
+		if(sourceNode == l1_NID and l1_NID != 0):
+			while linked1.head.get_next() is not None:
+				linked1.delete(linked1.head.get_next().get_nid())
+			linked1.head.set_hops(0)
+		elif(sourceNode == l2_NID and l2_NID != 0):
+			while linked2.head.get_next() is not None:
+				linked2.delete(linked2.head.get_next().get_nid())
+			linked2.head.set_hops(0)
+		elif(sourceNode == l3_NID and l3_NID != 0):
+			while linked3.head.get_next() is not None:
+				linked3.delete(linked3.head.get_next().get_nid())
+			linked3.head.set_hops(0)
+		elif(sourceNode == l4_NID and l4_NID != 0):
+			while linked4.head.get_next() is not None:
+				linked4.delete(linked4.head.get_next().get_nid())
+			linked4.head.set_hops(0)
+
+	if(sourceNode == l1_NID and l1_NID != 0):
+		index_counter = 0
+		while index_counter < len(message):
+			if linked1.search(message[index_counter]) is not None:
+				# Replace
+				temp_node = linked1.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					temp.node.set_hops(temp_val)
+			elif linked2.search(message[index_counter]) is not None:
+				temp_node = linked2.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked2.delete(message[index_counter])
+					linked1.insert(message[index_counter], temp_val)
+			elif linked3.search(message[index_counter]) is not None:
+				temp_node = linked3.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked3.delete(message[index_counter])
+					linked1.insert(message[index_counter], temp_val)
+			elif linked4.search(message[index_counter]) is not None:
+				temp_node = linked4.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked4.delete(message[index_counter])
+					linked1.insert(message[index_counter], temp_val)
+			else:
+				temp_val = int(message[index_counter + 1]) + 1
+				linked1.insert(message[index_counter], temp_val)
+			index_counter += 2
+	elif(sourceNode == l2_NID and l2_NID != 0):
+		index_counter = 0
+		while index_counter < len(message):
+			if linked2.search(message[index_counter]) is not None:
+				# Replace
+				temp_node = linked2.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					temp.node.set_hops(temp_val)
+			elif linked1.search(message[index_counter]) is not None:
+				temp_node = linked1.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked1.delete(message[index_counter])
+					linked2.insert(message[index_counter], temp_val)
+			elif linked3.search(message[index_counter]) is not None:
+				temp_node = linked3.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked3.delete(message[index_counter])
+					linked2.insert(message[index_counter], temp_val)
+			elif linked4.search(message[index_counter]) is not None:
+				temp_node = linked4.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked4.delete(message[index_counter])
+					linked2.insert(message[index_counter], temp_val)
+			else:
+				temp_val = int(message[index_counter + 1]) + 1
+				linked2.insert(message[index_counter], temp_val)
+			index_counter += 2
+	elif(sourceNode == l3_NID and l3_NID != 0):
+		index_counter = 0
+		while index_counter < len(message):
+			if linked3.search(message[index_counter]) is not None:
+				# Replace
+				temp_node = linked3.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					temp.node.set_hops(temp_val)
+			elif linked2.search(message[index_counter]) is not None:
+				temp_node = linked2.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked2.delete(message[index_counter])
+					linked3.insert(message[index_counter], temp_val)
+			elif linked1.search(message[index_counter]) is not None:
+				temp_node = linked1.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked1.delete(message[index_counter])
+					linked3.insert(message[index_counter], temp_val)
+			elif linked4.search(message[index_counter]) is not None:
+				temp_node = linked4.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked4.delete(message[index_counter])
+					linked3.insert(message[index_counter], temp_val)
+			else:
+				temp_val = int(message[index_counter + 1]) + 1
+				linked3.insert(message[index_counter], temp_val)
+			index_counter += 2
+	elif(sourceNode == l4_NID and l4_NID != 0):
+		index_counter = 0
+		while index_counter < len(message):
+			if linked4.search(message[index_counter]) is not None:
+				# Replace
+				temp_node = linked4.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					temp.node.set_hops(temp_val)
+			elif linked2.search(message[index_counter]) is not None:
+				temp_node = linked2.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked2.delete(message[index_counter])
+					linked4.insert(message[index_counter], temp_val)
+			elif linked3.search(message[index_counter]) is not None:
+				temp_node = linked3.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked3.delete(message[index_counter])
+					linked4.insert(message[index_counter], temp_val)
+			elif linked1.search(message[index_counter]) is not None:
+				temp_node = linked1.search(message[index_counter])
+				temp_val = int(message[index_counter + 1]) + 1
+				if temp_node.get_hops() > temp_val:
+					linked1.delete(message[index_counter])
+					linked4.insert(message[index_counter], temp_val)
+			else:
+				temp_val = int(message[index_counter + 1]) + 1
+				linked4.insert(message[index_counter], temp_val)
+			index_counter += 2
 
 # print status
 def PrintInfo():
@@ -621,15 +774,15 @@ def PrintInfo():
 
 def convert_linked_to_str(ll_nodes):
 	converted_str = ""
-	while ll_nodes.head is not None:
-		converted_str = converted_str + str(ll_nodes.head.get_nid())
-		converted_str = converted_str + str(ll_nodes.head.get_hops())
-		del_id = ll_nodes.head.get_nid()
-		ll_nodes.delete(del_id)
+	curr_ptr = ll_nodes.head
+	while curr_ptr is not None:
+		converted_str = converted_str + str(curr_ptr.get_nid())
+		converted_str = converted_str + str(curr_ptr.get_hops())
+		curr_ptr = curr_ptr.get_next()
 	return converted_str
 
 # Essentially send_tcp but can be used for propagation
-def DebugLinkTCP(dest_nid):
+def DebugLinkTCP(dest_nid, message):
 
 	# global variables
 	global NID, hostname, tcp_port
@@ -638,14 +791,7 @@ def DebugLinkTCP(dest_nid):
 	global l1_NID, l2_NID, l3_NID, l4_NID
 	global linked1, linked2, linked3, linked4
 
-	# Add destination ID and current node ID to message
-	message = str(-1) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
-
 	# look up address information for the destination node
-	print(linked1.search(l1_NID))
-	print(linked2.search(l1_NID))
-	print(linked3.search(l1_NID))
-	print(linked4.search(l1_NID))
 	if linked1.search(dest_nid) is not None:
 		HOST = l1_hostname
 		PORT = l1_tcp_port
@@ -676,14 +822,13 @@ def DebugLinkTCP(dest_nid):
 		sock.close()
 
 	except:
-		print('error, message not sent')
 		pass
 
 # main function
 def main(argv):
 
 	# global variables
-	global node
+	global node, linked1
 
 	# set initial value for loop
 	run = 1
@@ -746,8 +891,10 @@ def main(argv):
 
 		elif(selection == '5'):
 			os.system('clear')
-			dest_nid = input("Node #: ")
-			DebugLinkTCP(int(dest_nid))
+			print("Sending link data to node:", end = ' ')
+			print(l1_NID)
+			temp_msg = str(0) + '%20' + str(l1_NID) + '%20' + convert_linked_to_str(linked1)
+			DebugLinkTCP(int(l1_NID), temp_msg)
 			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")	
 
 		else:
