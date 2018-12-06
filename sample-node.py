@@ -613,16 +613,16 @@ def LinkDataSend():
 
 	while 1:
 		time.sleep(5)
-		if(linked1.head.get_hops() != 0):
+		if(l1_NID != 0 and linked1.head.get_hops() != 0):
 			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
 			DebugLinkTCP(l1_NID, message)
-		if(linked2.head.get_hops() != 0):
+		if(l2_NID != 0 and linked2.head.get_hops() != 0):
 			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked2)
 			DebugLinkTCP(l2_NID, message)
-		if(linked3.head.get_hops() != 0):
+		if(l3_NID != 0 and linked3.head.get_hops() != 0):
 			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked3)
 			DebugLinkTCP(l3_NID, message)
-		if(linked4.head.get_hops() != 0):
+		if(l4_NID != 0 and linked4.head.get_hops() != 0):
 			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked4)
 			DebugLinkTCP(l4_NID, message)
 
