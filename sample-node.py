@@ -671,6 +671,8 @@ def LinkDataRecv(sourceNode, message):
 	elif(sourceNode == l2_NID and l2_NID != 0):
 		index_counter = 0
 		while index_counter < len(message):
+			if message[index_counter] == NID:
+				index_counter += 2
 			if linked2.search(message[index_counter]) is not None:
 				# Replace
 				temp_node = linked2.search(message[index_counter])
@@ -702,6 +704,8 @@ def LinkDataRecv(sourceNode, message):
 	elif(sourceNode == l3_NID and l3_NID != 0):
 		index_counter = 0
 		while index_counter < len(message):
+			if message[index_counter] == NID:
+				index_counter += 2
 			if linked3.search(message[index_counter]) is not None:
 				# Replace
 				temp_node = linked3.search(message[index_counter])
@@ -733,6 +737,8 @@ def LinkDataRecv(sourceNode, message):
 	elif(sourceNode == l4_NID and l4_NID != 0):
 		index_counter = 0
 		while index_counter < len(message):
+			if message[index_counter] == NID:
+				index_counter += 2
 			if linked4.search(message[index_counter]) is not None:
 				# Replace
 				temp_node = linked4.search(message[index_counter])
