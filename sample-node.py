@@ -597,18 +597,30 @@ def LinkDataSend():
 
 	while 1:
 		time.sleep(5)
-		if(linked1.head.get_hops() != 0):
-			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
-			DebugLinkTCP(l1_NID, message)
-		if(linked2.head.get_hops() != 0):
-			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked2)
-			DebugLinkTCP(l2_NID, message)
-		if(linked3.head.get_hops() != 0):
-			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked3)
-			DebugLinkTCP(l3_NID, message)
-		if(linked4.head.get_hops() != 0):
-			message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked4)
-			DebugLinkTCP(l4_NID, message)
+		if(l1_NID != 0):
+			if(linked1.head.get_hops() != 0):
+				message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked2) + convert_linked_to_str(linked3) + convert_linked_to_str(linked4)
+				print("to node" + str(l1_NID))
+				print(message)
+				DebugLinkTCP(l1_NID, message)
+		if(l1_NID != 0):
+			if(linked2.head.get_hops() != 0):
+				message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1) + convert_linked_to_str(linked3) + convert_linked_to_str(linked4)
+				print("to node" + str(l2_NID))
+				print(message)
+				DebugLinkTCP(l2_NID, message)
+		if(l1_NID != 0):
+			if(linked3.head.get_hops() != 0):
+				message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1) + convert_linked_to_str(linked2) + convert_linked_to_str(linked4)
+				print("to node" + str(l3_NID))
+				print(message)
+				DebugLinkTCP(l3_NID, message)
+		if(l1_NID != 0):
+			if(linked4.head.get_hops() != 0):
+				message = str(0) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1) + convert_linked_to_str(linked2) + convert_linked_to_str(linked3)
+				print("to node" + str(l4_NID))
+				print(message)
+				DebugLinkTCP(l4_NID, message)
 
 # Function to handle recieving data
 def LinkDataRecv(sourceNode, message):
@@ -616,24 +628,6 @@ def LinkDataRecv(sourceNode, message):
 	# print("Link data recieved from node:", end = ' ')
 	# print(sourceNode)
 	global linked1, linked2, linked3, linked4
-
-	if int(message[1]) == 0:
-		if(sourceNode == l1_NID and l1_NID != 0):
-			while linked1.head.get_next() is not None:
-				linked1.delete(linked1.head.get_next().get_nid())
-			linked1.head.set_hops(0)
-		elif(sourceNode == l2_NID and l2_NID != 0):
-			while linked2.head.get_next() is not None:
-				linked2.delete(linked2.head.get_next().get_nid())
-			linked2.head.set_hops(0)
-		elif(sourceNode == l3_NID and l3_NID != 0):
-			while linked3.head.get_next() is not None:
-				linked3.delete(linked3.head.get_next().get_nid())
-			linked3.head.set_hops(0)
-		elif(sourceNode == l4_NID and l4_NID != 0):
-			while linked4.head.get_next() is not None:
-				linked4.delete(linked4.head.get_next().get_nid())
-			linked4.head.set_hops(0)
 
 	if(sourceNode == l1_NID and l1_NID != 0):
 		index_counter = 0
@@ -671,8 +665,6 @@ def LinkDataRecv(sourceNode, message):
 	elif(sourceNode == l2_NID and l2_NID != 0):
 		index_counter = 0
 		while index_counter < len(message):
-			if message[index_counter] == NID:
-				index_counter += 2
 			if linked2.search(message[index_counter]) is not None:
 				# Replace
 				temp_node = linked2.search(message[index_counter])
@@ -704,8 +696,6 @@ def LinkDataRecv(sourceNode, message):
 	elif(sourceNode == l3_NID and l3_NID != 0):
 		index_counter = 0
 		while index_counter < len(message):
-			if message[index_counter] == NID:
-				index_counter += 2
 			if linked3.search(message[index_counter]) is not None:
 				# Replace
 				temp_node = linked3.search(message[index_counter])
@@ -737,8 +727,6 @@ def LinkDataRecv(sourceNode, message):
 	elif(sourceNode == l4_NID and l4_NID != 0):
 		index_counter = 0
 		while index_counter < len(message):
-			if message[index_counter] == NID:
-				index_counter += 2
 			if linked4.search(message[index_counter]) is not None:
 				# Replace
 				temp_node = linked4.search(message[index_counter])
@@ -785,8 +773,8 @@ def convert_linked_to_str(ll_nodes):
 	converted_str = ""
 	curr_ptr = ll_nodes.head
 	while curr_ptr is not None:
-		converted_str = converted_str + str(curr_ptr.get_nid())
-		converted_str = converted_str + str(curr_ptr.get_hops())
+		converted_str = converted_str + str(curr_ptr.get_nid()) #+ "%20"
+		converted_str = converted_str + str(curr_ptr.get_hops()) #+ "%20"
 		curr_ptr = curr_ptr.get_next()
 	return converted_str
 
