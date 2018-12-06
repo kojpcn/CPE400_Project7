@@ -101,7 +101,7 @@ class llnode(object):
 		self.hops = hops
 		self.next_node = next_node
 
-	def GetNID (self):
+	def get_nid (self):
 		return self.nid
 
 	def get_next (self):
@@ -110,7 +110,10 @@ class llnode(object):
 	def set_next (self, new_next):
 		self.next_node = new_next
 
-	def set_hops(self, new_hops):
+	def get_hops (self):
+		return self.hops
+
+	def set_hops (self, new_hops):
 		self.hops = new_hops
 
 # class: LinkedList for llnode
@@ -126,14 +129,7 @@ class LinkedList (object):
 			return current
 		else:
 			return self.head
-
-	''' Old insert function (new inserts become head)
-	def insert (self, nid, hops):
-		new_node = llnode(nid, hops)
-		new_node.set_next(self.head)
-		self.head = new_node
-	'''
-
+	
 	# New insert function (new inserts at tail)
 	def insert (self, nid, hops):
 		new_node = llnode(nid, hops)
@@ -146,8 +142,8 @@ class LinkedList (object):
 	def search (self, nid):
 		current = self.head
 		found = False
-		while current and found is False:
-			if current.GetNID() == data:
+		while found is False:
+			if current.get_nid() == nid:
 				found = True
 			else:
 				current = current.get_next
@@ -159,7 +155,7 @@ class LinkedList (object):
 		previous = None
 		found = False
 		while current and found is False:
-			if current.GetNID() == nid:
+			if current.get_nid() == nid:
 				found = True
 			else:
 				previous = current
@@ -312,7 +308,7 @@ def TimeOutObserver():
 				currentNode.set_hops(-1)
 		else:
 			# Set node hop to 1 (re-connected)
-			currentNode = linked1.search()
+			currentNode = linked1.search(l1_NID)
 			if current is not None:
 				current.set_hops(1)
 		
@@ -324,7 +320,7 @@ def TimeOutObserver():
 				currentNode.set_hops(-1)
 		else:
 			# Set node hop to 1 (re-connected)
-			currentNode = linked2.search()
+			currentNode = linked2.search(l2_NID)
 			if current is not None:
 				current.set_hops(1)
 		
@@ -336,7 +332,7 @@ def TimeOutObserver():
 				currentNode.set_hops(-1)
 		else:
 			# Set node hop to 1 (re-connected)
-			currentNode = linked3.search()
+			currentNode = linked3.search(l3_NID)
 			if current is not None:
 				current.set_hops(1)
 		
@@ -348,9 +344,12 @@ def TimeOutObserver():
 				currentNode.set_hops(-1)
 		else:
 			# Set node hop to 1 (re-connected)
-			currentNode = linked4.search()
+			currentNode = linked4.search(l4_NID)
 			if current is not None:
 				current.set_hops(1)
+
+		# Only poll every second
+		time.wait(1)
 
 # class TCP Handler (this receives all TCP messages)
 class MyTCPHandler(socketserver.BaseRequestHandler):	
@@ -405,13 +404,8 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
 		DestFlag = int(SplitMsg[0])
 		SourceNode = int(SplitMsg[1])
 		message = SplitMsg[2]
-		
-		if(DestFlag == -1):
-			# Propagation
-			NodeTimeUpdate(SourceNode, time.time())
-			print("[Debug] LinkData recieved (udp)")
 
-		elif(DestFlag == NID):
+		if(DestFlag == NID):
 			print(message)
 
 		else:
@@ -581,6 +575,7 @@ def start_listener():
 	t3.daemon = True
 	t3.start()
 
+
 	# start thread for node time activity observation
 	t4 = threading.Thread(target=TimeOutObserver)
 	t4.daemon = True
@@ -625,31 +620,42 @@ def PrintInfo():
 	print("Address Data: " + str(node.Get_address_data_table()))
 	os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
 
-def DebugLinkTCP(dest_nid, message):
+def convert_linked_to_str(ll_nodes):
+	converted_str = ""
+	while ll_nodes.head is not None:
+		converted_str = converted_str + str(ll_nodes.head.get_nid())
+		converted_str = converted_str + str(ll_nodes.head.get_hops())
+		del_id = ll_nodes.head.get_nid()
+		ll_nodes.delete(del_id)
+	return converted_str
+
+# Essentially send_tcp but can be used for propagation
+def DebugLinkTCP(dest_nid):
 
 	# global variables
 	global NID, hostname, tcp_port
 	global l1_hostname, l2_hostname, l3_hostname, l4_hostname
 	global l1_tcp_port,l2_tcp_port, l3_tcp_port, l4_tcp_port	
 	global l1_NID, l2_NID, l3_NID, l4_NID
+	global linked1, linked2, linked3, linked4
 
 	# Add destination ID and current node ID to message
-	message = str(-1) + '%20' + str(NID) + '%20' + message
+	message = str(-1) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
 
 	# look up address information for the destination node
-	if dest_nid == str(l1_NID):
+	if linked1.search(dest_nid) is not None:
 		HOST = l1_hostname
 		PORT = l1_tcp_port
 
-	elif dest_nid == str(l2_NID):
+	elif linked2.search(dest_nid) is not None:
 		HOST = l2_hostname
 		PORT = l2_tcp_port
 
-	elif dest_nid == str(l3_NID):
+	elif linked3.search(dest_nid) is not None:
 		HOST = l3_hostname
 		PORT = l3_tcp_port
 
-	elif dest_nid == str(l4_NID):
+	elif linked4.search(dest_nid) is not None:
 		HOST = l4_hostname
 		PORT = l4_tcp_port
 
@@ -668,48 +674,6 @@ def DebugLinkTCP(dest_nid, message):
 
 	except:
 		print('error, message not sent')
-		pass
-
-# function: hello (alive)
-def DebugLinkUDP(dest_nid, message):
-
-	# global variables
-	global NID, hostname, tcp_port
-	global l1_hostname, l2_hostname, l3_hostname, l4_hostname
-	global l1_tcp_port,l2_tcp_port, l3_tcp_port, l4_tcp_port	
-	global l1_NID, l2_NID, l3_NID, l4_NID
-
-	# Add destination ID and current node ID to message
-	message = str(-1) + '%20' + str(NID) + '%20' + message
-
-	if dest_nid == str(l1_NID):
-		HOST = l1_hostname
-		PORT = l1_udp_port
-
-	elif dest_nid == str(l2_NID):
-		HOST = l2_hostname
-		PORT = l2_udp_port
-
-	elif dest_nid == str(l3_NID):
-		HOST = l3_hostname
-		PORT = l3_udp_port
-
-	elif dest_nid == str(l4_NID):
-		HOST = l4_hostname
-		PORT = l4_udp_port
-
-	else:
-		print('no address information for destination')
-
-	# encode message as byte stream
-	message = message.encode()
-
-	try:
-		# open socket and send to neighbor 4
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-		sock.sendto(message, (HOST, PORT))
-	except:
-		print('error, message not sent')			
 		pass
 
 # main function
@@ -742,7 +706,6 @@ def main(argv):
 		print("3. Send message to another node via UDP")		
 		print("4. Quit")
 		print("5. Send LinkData (tcp)")
-		print("6. Send LinkData (udp)")
 
 		# set selection value from user
 		selection = input("Enter Selection: ")
@@ -781,21 +744,7 @@ def main(argv):
 		elif(selection == '5'):
 			os.system('clear')
 			dest_nid = input("Node #: ")
-			message = input("Message: ")
-			if "%20" in message:
-				print("Error, can't use %20 (We use it for header separation!)")
-			else:
-				DebugLinkTCP(dest_nid, message)
-			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")
-
-		elif(selection == '6'):
-			os.system('clear')
-			dest_nid = input("Node #: ")
-			message = input("Message: ")
-			if "%20" in message:
-				print("Error, can't use %20 (We use it for header separation!)")
-			else:
-				DebugLinkUDP(dest_nid, message)
+			DebugLinkTCP(int(dest_nid))
 			os.system("""bash -c 'read -s -n 1 -p "Press any key to continue..."'""")	
 
 		else:
