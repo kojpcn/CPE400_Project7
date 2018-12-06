@@ -141,12 +141,13 @@ class LinkedList (object):
 
 	def search (self, nid):
 		current = self.head
-		found = False
-		while found is False:
+		if current is None:
+			print("ITS FUCKING EMPTY")
+		while current is not None:
 			if current.get_nid() == nid:
-				found = True
+				break
 			else:
-				current = current.get_next
+				current = current.get_next()
 		# current will be None if not found
 		return current
 
@@ -292,10 +293,8 @@ def TimeOutObserver():
 	global l1_last_connection, l2_last_connection, l3_last_connection, l4_last_connection
 	global linked1, linked2, linked3, linked4
 	
-	currentTime, currentNode
-	
 	# Give time for links to propagate
-	time.wait(10)
+	time.sleep(10)
 
 	while 1:
 		currentTime = time.time()
@@ -304,52 +303,52 @@ def TimeOutObserver():
 		if(currentTime - l1_last_connection > 10):
 			# Set node hop to -1 (disconnected)
 			currentNode = linked1.search(l1_NID)
-			if current is not None:
+			if currentNode is not None:
 				currentNode.set_hops(-1)
 		else:
 			# Set node hop to 1 (re-connected)
 			currentNode = linked1.search(l1_NID)
-			if current is not None:
-				current.set_hops(1)
+			if currentNode is not None:
+				currentNode.set_hops(1)
 		
 		# Check link 2
 		if(currentTime - l2_last_connection > 10):
 			# Set node hop to -1 (disconnected)
 			currentNode = linked2.search(l2_NID)
-			if current is not None:
+			if currentNode is not None:
 				currentNode.set_hops(-1)
 		else:
 			# Set node hop to 1 (re-connected)
 			currentNode = linked2.search(l2_NID)
-			if current is not None:
-				current.set_hops(1)
+			if currentNode is not None:
+				currentNode.set_hops(1)
 		
 		# Check link 3
 		if(currentTime - l3_last_connection > 10):
 			# Set node hop to -1 (disconnected)
 			currentNode = linked3.search(l3_NID)
-			if current is not None:
+			if currentNode is not None:
 				currentNode.set_hops(-1)
 		else:
 			# Set node hop to 1 (re-connected)
 			currentNode = linked3.search(l3_NID)
-			if current is not None:
-				current.set_hops(1)
+			if currentNode is not None:
+				currentNode.set_hops(1)
 		
 		# Check link 4
 		if(currentTime - l4_last_connection > 10):
 			# Set node hop to -1 (disconnected)
 			currentNode = linked4.search(l4_NID)
-			if current is not None:
+			if currentNode is not None:
 				currentNode.set_hops(-1)
 		else:
 			# Set node hop to 1 (re-connected)
 			currentNode = linked4.search(l4_NID)
-			if current is not None:
-				current.set_hops(1)
+			if currentNode is not None:
+				currentNode.set_hops(1)
 
 		# Only poll every second
-		time.wait(1)
+		time.sleep(1)
 
 # class TCP Handler (this receives all TCP messages)
 class MyTCPHandler(socketserver.BaseRequestHandler):	
@@ -577,9 +576,9 @@ def start_listener():
 
 
 	# start thread for node time activity observation
-	t4 = threading.Thread(target=TimeOutObserver)
-	t4.daemon = True
-	t4.start()
+#	t4 = threading.Thread(target=TimeOutObserver)
+#	t4.daemon = True
+#	t4.start()
 
 # function: TCP listener
 def TCP_listener():
@@ -643,6 +642,10 @@ def DebugLinkTCP(dest_nid):
 	message = str(-1) + '%20' + str(NID) + '%20' + convert_linked_to_str(linked1)
 
 	# look up address information for the destination node
+	print(linked1.search(l1_NID))
+	print(linked2.search(l1_NID))
+	print(linked3.search(l1_NID))
+	print(linked4.search(l1_NID))
 	if linked1.search(dest_nid) is not None:
 		HOST = l1_hostname
 		PORT = l1_tcp_port
