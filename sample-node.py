@@ -613,8 +613,8 @@ def LinkDataSend():
 # Function to handle recieving data
 def LinkDataRecv(sourceNode, message):
 
-	print("Link data recieved from node:", end = ' ')
-	print(sourceNode)
+	# print("Link data recieved from node:", end = ' ')
+	# print(sourceNode)
 	global linked1, linked2, linked3, linked4
 
 	if int(message[1]) == 0:
